@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}500 Server Error — Capacity Connect{% endblock %}
+{% block public_content %}
+<div class="min-h-[70vh] flex items-center justify-center py-12 px-4 text-center">
+  <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-gov-200 shadow-xl space-y-4">
+    <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl font-bold">500</div>
+    <h1 class="text-2xl font-bold text-gov-900">Internal Server Error</h1>
+    <p class="text-xs text-gov-600">An unexpected system error occurred while processing your request. The event has been logged for review.</p>
+    <a href="{% url 'core:landing' %}" class="btn-primary text-xs inline-block">Return to Home</a>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Status Pending — Capacity Connect{% endblock %}
+
+{% block public_content %}
+<div class="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gov-50">
+  <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-gov-200 shadow-xl text-center space-y-6">
+    
+    <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+      <i data-lucide="clock" class="w-8 h-8"></i>
+    </div>
+
+    <div class="space-y-2">
+      <h2 class="text-2xl font-bold text-gov-900">Account Pending Verification</h2>
+      <p class="text-xs text-gov-600 leading-relaxed">
+        Hello <strong>{{ user.get_full_name_or_username }}</strong>, your account registration as <strong>{{ user.get_role_display }}</strong> has been recorded and is currently undergoing administrative verification by your institute/MoES administrator.
+      </p>
+    </div>
+
+    {% if user.approval_status == 'REJECTED' %}
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-left text-xs text-red-800 space-y-1">
+      <p class="font-bold">Registration Status: Rejected</p>
+      <p>Reason: {{ user.rejection_reason|default:"Verification requirements not met. Please contact administrator." }}</p>
+    </div>
+    {% else %}
+    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-left text-xs text-amber-900 space-y-1">
+      <p class="font-semibold flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-4 h-4"></i> Security Protocol</p>
+      <p>Protected learning resources, assessments, and certifications will unlock immediately upon administrator approval.</p>
+    </div>
+    {% endif %}
+
+    <div class="pt-4 border-t border-gov-100 flex justify-center gap-3">
+      <a href="{% url 'accounts:logout' %}" class="btn-secondary text-xs">Sign Out</a>
+      <a href="{% url 'core:landing' %}" class="btn-primary text-xs">Return to Homepage</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+  
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-xs text-gov-500">
+    <a href="{% url 'courses:catalog' %}" class="hover:text-gov-800">Catalogue</a>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+    <span class="text-gov-700 font-semibold">{{ course.category.name|default:"General" }}</span>
+    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+    <span class="text-gov-900 truncate max-w-xs">{{ course.title }}</span>
+  </nav>
+
+  <!-- Hero Header Card -->
+  <div class="bg-gradient-to-r from-gov-900 to-navy-900 text-white rounded-2xl p-8 sm:p-10 shadow-xl space-y-6">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-brand-500/30 text-teal-200 border border-brand-400/30">
+        {{ course.category.name|default:"Science" }}
+      </span>
+      <span class="text-xs px-2.5 py-1 rounded bg-white/20 text-white font-medium">
+        {{ course.get_difficulty_level_display }} Level
+      </span>
+      <span class="text-xs text-gov-300 flex items-center gap-1.5 ml-2">
+        <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-400"></i> ~{{ course.estimated_duration_hours }} Hours Duration
+      </span>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight max-w-3xl">
+      {{ course.title }}
+    </h1>
+
+    <p class="text-sm sm:text-base text-gov-300 max-w-3xl leading-relaxed">
+      {{ course.description }}
+    </p>
+
+    <div class="pt-4 border-t border-gov-800 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-brand-700 text-white font-bold flex items-center justify-center text-sm border border-brand-500/50">
+          {{ course.trainer.username|slice:":1"|upper }}
+        </div>
+        <div>
+          <p class="text-xs text-gov-400">Lead Instructor</p>
+          <p class="text-sm font-bold text-white">{{ course.trainer.get_full_name_or_username }}</p>
+          <p class="text-[11px] text-brand-300">{{ course.trainer.department.name|default:"Ministry of Earth Sciences" }}</p>
+        </div>
+      </div>
+
+      <!-- Enrollment CTA -->
+      <div>
+        {% if enrollment %}
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span class="text-[11px] text-gov-400">Your Progress</span>
+            <p class="text-sm font-bold text-teal-300">{{ enrollment.progress_percentage }}% Completed</p>
+          </div>
+          <a href="{% url 'courses:learn' slug=course.slug %}" class="btn-primary py-3 px-6 text-sm font-semibold shadow-lg">
+            Resume Course →
+          </a>
+        </div>
+        {% elif user.is_authenticated %}
+        <form method="post" action="{% url 'courses:enroll' slug=course.slug %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-primary py-3 px-8 text-sm font-semibold shadow-lg">
+            Enroll in Course Now
+          </button>
+        </form>
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn-primary py-3 px-8 text-sm font-semibold shadow-lg">
+          Sign In to Enroll
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Curriculum & Objectives Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left: Modules & Syllabus -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Objectives -->
+      <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-gov-900 flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-5 h-5 text-brand-600"></i> Learning Objectives & Competencies
+        </h2>
+        <p class="text-xs text-gov-700 leading-relaxed">{{ course.learning_objectives }}</p>
+      </div>
+
+      <!-- Modules Accordion/List -->
+      <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-gov-100 pb-3">
+          <h2 class="text-base font-bold text-gov-900 flex items-center gap-2">
+            <i data-lucide="layers" class="w-5 h-5 text-brand-600"></i> Course Curriculum ({{ course.modules.count }} Modules)
+          </h2>
+          <span class="text-xs text-gov-500">Sequential Learning</span>
+        </div>
+
+        <div class="space-y-3">
+          {% for mod in course.modules.all %}
+          <div class="p-4 rounded-xl bg-gov-50 border border-gov-200/80 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-gov-900 flex items-center gap-2">
+                <span class="w-5 h-5 rounded bg-brand-100 text-brand-800 font-bold flex items-center justify-center text-[10px]">
+                  {{ mod.order }}
+                </span>
+                {{ mod.title }}
+              </span>
+              {% if mod.is_mandatory %}
+              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Mandatory</span>
+              {% endif %}
+            </div>
+            {% if mod.description %}
+            <p class="text-xs text-gov-600 pl-7">{{ mod.description }}</p>
+            {% endif %}
+
+            <div class="pl-7 pt-1 flex items-center gap-4 text-[11px] text-gov-500">
+              <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> {{ mod.resources.count }} Materials</span>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-xs text-gov-400 italic py-4">No modules published yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Sidebar Information -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Prerequisites -->
+      <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-3">
+        <h3 class="text-sm font-bold text-gov-900 flex items-center gap-2">
+          <i data-lucide="help-circle" class="w-4 h-4 text-brand-600"></i> Prerequisites
+        </h3>
+        <p class="text-xs text-gov-600 leading-relaxed">
+          {{ course.prerequisites|default:"General background in atmospheric or scientific computing." }}
+        </p>
+      </div>
+
+      <!-- Associated Competencies -->
+      <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-3">
+        <h3 class="text-sm font-bold text-gov-900 flex items-center gap-2">
+          <i data-lucide="award" class="w-4 h-4 text-purple-600"></i> Mapped Competencies
+        </h3>
+        <div class="space-y-2">
+          {% for cc in course.competency_outcomes.all %}
+          <div class="p-2.5 rounded-lg bg-gov-50 border border-gov-200 text-xs flex items-center justify-between">
+            <span class="font-semibold text-gov-800">{{ cc.competency.name }}</span>
+            <span class="badge-blue text-[10px]">{{ cc.target_proficiency }}</span>
+          </div>
+          {% empty %}
+          <p class="text-xs text-gov-400">Institutional competencies mapping in progress.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Examination & Certification Note -->
+      <div class="p-5 rounded-2xl bg-brand-50 border border-brand-200 space-y-2 text-xs text-brand-900">
+        <div class="font-bold flex items-center gap-1.5 text-brand-800">
+          <i data-lucide="shield-check" class="w-4 h-4"></i> Certification Criteria
+        </div>
+        <p>Completing all mandatory modules and achieving the required assessment score issues an official, verifiable MoES Certificate of Completion.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+

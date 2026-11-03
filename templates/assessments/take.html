@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Taking Assessment: {{ assessment.title }} — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+  
+  <!-- Fixed/Sticky Assessment Header with Timer -->
+  <div class="bg-gov-900 text-white rounded-2xl p-6 shadow-xl sticky top-20 z-30 flex items-center justify-between border border-gov-800">
+    <div>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-teal-300">Attempt #{{ attempt_number }}</span>
+      <h1 class="text-base sm:text-lg font-bold">{{ assessment.title }}</h1>
+      <p class="text-[11px] text-gov-400">Total Questions: {{ questions|length }} | Passing criteria: {{ assessment.passing_percentage }}%</p>
+    </div>
+
+    <!-- Countdown Timer Container -->
+    <div class="bg-gov-800 px-4 py-2.5 rounded-xl border border-gov-700 text-center">
+      <span class="text-[10px] font-semibold text-gov-400 uppercase tracking-wider block">Time Remaining</span>
+      <span id="assessment-timer" class="text-xl sm:text-2xl font-mono font-bold text-teal-300">
+        {{ assessment.duration_minutes }}:00
+      </span>
+    </div>
+  </div>
+
+  <!-- Assessment Questions Form -->
+  <form id="assessment-form" method="post" class="space-y-6">
+    {% csrf_token %}
+
+    {% for q in questions %}
+    <div class="bg-white rounded-2xl border border-gov-200 p-6 sm:p-8 shadow-sm space-y-4">
+      
+      <div class="flex items-start gap-3">
+        <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 font-bold flex items-center justify-center text-xs flex-shrink-0 border border-brand-200">
+          {{ forloop.counter }}
+        </span>
+        <div class="flex-1">
+          <h3 class="text-sm sm:text-base font-bold text-gov-900">{{ q.question_text }}</h3>
+          <span class="text-[10px] text-gov-400">{{ q.marks }} Mark{{ q.marks|pluralize }}</span>
+        </div>
+      </div>
+
+      <!-- 4 Answer Options (Radio Inputs) -->
+      <div class="space-y-2.5 pl-11">
+        {% for opt in q.options.all %}
+        <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gov-200 hover:bg-gov-50/80 cursor-pointer transition-colors text-xs font-medium text-gov-800 has-[:checked]:bg-brand-50 has-[:checked]:border-brand-500 has-[:checked]:text-brand-950">
+          <input type="radio" name="question_{{ q.id }}" value="{{ opt.id }}" class="text-brand-600 focus:ring-brand-500 h-4 w-4 border-gov-300">
+          <span>{{ opt.option_text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+    <!-- Submission Bar -->
+    <div class="p-6 bg-white rounded-2xl border border-gov-200 shadow-md flex items-center justify-between">
+      <span class="text-xs text-gov-500">Ensure all answers are chosen before final submission.</span>
+      <button type="submit" onclick="return confirm('Are you sure you wish to submit your assessment? This will finalize attempt #{{ attempt_number }}.')" class="btn-primary py-3 px-8 text-sm font-semibold shadow-lg">
+        Submit Final Answers
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.CapacityConnect && window.CapacityConnect.initAssessmentTimer) {
+      window.CapacityConnect.initAssessmentTimer(
+        {{ assessment.duration_minutes }},
+        'assessment-form',
+        'assessment-timer'
+      );
+    }
+  });
+</script>
+{% endblock %}
+

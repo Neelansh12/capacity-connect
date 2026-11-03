@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+  
+  <div class="flex items-center justify-between border-b border-gov-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-gov-900">Professional Profile & Settings</h1>
+      <p class="text-xs text-gov-500">Manage your capacity building credentials, qualifications, and department mapping.</p>
+    </div>
+    <span class="badge-teal text-xs">{{ user.get_role_display }}</span>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gov-200 p-8 shadow-sm">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">First Name</label>
+          {{ form.first_name }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Last Name</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Official Email</label>
+          {{ form.email }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Phone Number</label>
+          {{ form.phone_number }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Department / Institute</label>
+          {{ form.department }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Designation</label>
+          {{ form.designation }}
+        </div>
+      </div>
+
+      {% if user.is_employee_role %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Employee ID</label>
+          {{ form.employee_id }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Years of Scientific Experience</label>
+          {{ form.experience_years }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Academic & Technical Qualifications</label>
+        {{ form.qualifications }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Areas of Interest</label>
+        {{ form.areas_of_interest }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Learning Objectives</label>
+        {{ form.learning_objectives }}
+      </div>
+      {% endif %}
+
+      {% if user.is_trainer_role %}
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Years of Professional / Research Experience</label>
+        {{ form.experience_years }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Academic Degrees & Certifications</label>
+        {{ form.qualifications }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Primary Domains of Scientific Expertise</label>
+        {{ form.areas_of_expertise }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1">Professional Biography</label>
+        {{ form.biography }}
+      </div>
+      {% endif %}
+
+      <div class="pt-4 border-t border-gov-100 flex items-center justify-end gap-3">
+        <a href="{% url 'accounts:dashboard_redirect' %}" class="btn-secondary text-sm">Cancel</a>
+        <button type="submit" class="btn-primary text-sm font-semibold">Save Profile Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

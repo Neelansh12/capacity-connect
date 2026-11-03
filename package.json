@@ -1,0 +1,19 @@
+{
+  "name": "capacity-connect",
+  "version": "1.0.0",
+  "description": "Digital Capacity Building & Learning Management Portal",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./static/src/css/input.css -o ./static/dist/css/output.css --minify",
+    "watch:css": "npx tailwindcss -i ./static/src/css/input.css -o ./static/dist/css/output.css --watch",
+    "build:ts": "npx tsc",
+    "watch:ts": "npx tsc --watch",
+    "build": "npm run build:css && npm run build:ts"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}
+

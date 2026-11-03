@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}My Authored Courses — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gov-200">
+    <div>
+      <h1 class="text-2xl font-bold text-gov-900">Authored Course Management</h1>
+      <p class="text-xs text-gov-500">Create, edit, configure modules, and publish institutional courses.</p>
+    </div>
+    <a href="{% url 'courses:trainer_create' %}" class="btn-primary text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i> Create New Course
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for course in courses %}
+    <div class="bg-white rounded-2xl border border-gov-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
+      
+      <div class="p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">
+            {{ course.category.name|default:"General" }}
+          </span>
+          {% if course.status == 'PUBLISHED' %}
+          <span class="badge-green">Published</span>
+          {% elif course.status == 'DRAFT' %}
+          <span class="badge-amber">Draft</span>
+          {% else %}
+          <span class="badge-gray">Archived</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <h3 class="text-base font-bold text-gov-900 line-clamp-2">{{ course.title }}</h3>
+          <p class="text-xs text-gov-600 mt-1 line-clamp-2">{{ course.description }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-[11px] text-gov-500 pt-2 border-t border-gov-100">
+          <span>{{ course.get_modules_count }} Modules</span>
+          <span class="text-right">{{ course.enrolled_count }} Enrolled</span>
+          <span>{{ course.estimated_duration_hours }} Hours</span>
+          <span class="text-right">{{ course.get_difficulty_level_display }}</span>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="p-4 bg-gov-50 border-t border-gov-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <a href="{% url 'courses:detail' slug=course.slug %}" class="text-gov-700 hover:text-brand-600 font-medium">
+          View Detail
+        </a>
+        <div class="flex items-center gap-1.5">
+          <a href="{% url 'courses:trainer_edit' course_id=course.id %}" class="px-2 py-1 bg-white hover:bg-gov-100 rounded border border-gov-200 text-gov-700">
+            Edit
+          </a>
+          <a href="{% url 'courses:manage_modules' course_id=course.id %}" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded shadow-sm">
+            Modules
+          </a>
+          <a href="{% url 'assessments:manage_assessment' course_id=course.id %}" class="px-2 py-1 bg-gov-800 hover:bg-gov-900 text-white rounded shadow-sm" title="Assessment">
+            Exam
+          </a>
+        </div>
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-dashed border-gov-300 p-8 space-y-4">
+      <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
+        <i data-lucide="book-open" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-gov-900">No Courses Authored Yet</h3>
+        <p class="text-xs text-gov-500 mt-1">Start by creating your first technical training course.</p>
+      </div>
+      <a href="{% url 'courses:trainer_create' %}" class="btn-primary text-xs inline-flex items-center gap-1.5">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i> Create First Course
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+

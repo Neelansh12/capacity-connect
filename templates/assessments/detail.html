@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Assessment: {{ assessment.title }} — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+  
+  <div class="flex items-center justify-between pb-4 border-b border-gov-200">
+    <div>
+      <h1 class="text-2xl font-bold text-gov-900">{{ assessment.title }}</h1>
+      <p class="text-xs text-gov-500">Course: {{ course.title }} | Instructor: {{ course.trainer.get_full_name_or_username }}</p>
+    </div>
+    <a href="{% url 'courses:learn' slug=course.slug %}" class="btn-secondary text-xs">
+      ← Return to Course
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+    
+    <!-- Left: Instructions & Parameters -->
+    <div class="md:col-span-7 space-y-6">
+      <div class="bg-white rounded-2xl border border-gov-200 p-8 shadow-sm space-y-6">
+        <div>
+          <h2 class="text-base font-bold text-gov-900 flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-brand-600"></i> Examination Guidelines
+          </h2>
+          <p class="text-xs text-gov-600 mt-2 leading-relaxed">
+            {{ assessment.description|default:"Please review the examination parameters carefully before starting. Once launched, the timer will countdown automatically and cannot be paused." }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-gov-100 text-xs">
+          <div class="p-3 bg-gov-50 rounded-xl">
+            <span class="text-gov-500">Duration</span>
+            <p class="text-base font-bold text-gov-900">{{ assessment.duration_minutes }} Minutes</p>
+          </div>
+          <div class="p-3 bg-gov-50 rounded-xl">
+            <span class="text-gov-500">Passing Score</span>
+            <p class="text-base font-bold text-emerald-600">{{ assessment.passing_percentage }}%</p>
+          </div>
+          <div class="p-3 bg-gov-50 rounded-xl">
+            <span class="text-gov-500">Max Attempts</span>
+            <p class="text-base font-bold text-gov-900">{{ assessment.max_attempts }}</p>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gov-100 flex items-center justify-between">
+          <div class="text-xs text-gov-500">
+            <span>Attempts used: <strong>{{ attempts_count }} / {{ assessment.max_attempts }}</strong></span>
+          </div>
+
+          {% if can_attempt %}
+          <a href="{% url 'assessments:take' course_slug=course.slug %}" class="btn-primary py-2.5 px-6 text-sm font-semibold shadow-md flex items-center gap-2">
+            <i data-lucide="play" class="w-4 h-4"></i> Start Assessment
+          </a>
+          {% else %}
+          <button disabled class="btn-secondary text-xs opacity-50 cursor-not-allowed">
+            Max Attempts Reached
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Attempt History -->
+    <div class="md:col-span-5 space-y-4">
+      <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-gov-900 flex items-center gap-2">
+          <i data-lucide="history" class="w-4 h-4 text-brand-600"></i> Previous Attempts
+        </h3>
+
+        <div class="space-y-3">
+          {% for att in attempts %}
+          <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs {% if att.passed %}bg-emerald-50/60 border-emerald-200{% else %}bg-gov-50 border-gov-200{% endif %}">
+            <div>
+              <p class="font-bold text-gov-900">Attempt #{{ att.attempt_number }}</p>
+              <p class="text-[10px] text-gov-500">{{ att.submitted_at|date:"d M Y, H:i" }}</p>
+            </div>
+            <div class="text-right">
+              <span class="font-extrabold text-sm {% if att.passed %}text-emerald-700{% else %}text-rose-600{% endif %}">
+                {{ att.percentage_obtained }}%
+              </span>
+              <p class="text-[10px] font-semibold {% if att.passed %}text-emerald-600{% else %}text-rose-500{% endif %}">
+                {% if att.passed %}PASSED{% else %}FAILED{% endif %}
+              </p>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-xs text-gov-400 italic py-4 text-center">No attempts made yet.</p>
+          {% endfor %}
+        </div>
+
+        {% if best_attempt %}
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 space-y-1">
+          <p class="font-bold flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> Verified Passing Score</p>
+          <p>You have satisfied the assessment requirements for course completion.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+

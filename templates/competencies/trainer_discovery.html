@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Trainer Discovery & Recommendation Engine — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gov-200">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold text-gov-900">Explainable Trainer Discovery Engine</h1>
+        <span class="badge-teal text-xs">Rule-Based Match</span>
+      </div>
+      <p class="text-xs text-gov-500 mt-1">Discover internal and certified trainers based on organizational competency matrices and verifiable expertise scores.</p>
+    </div>
+    <a href="{% url 'competencies:library' %}" class="btn-secondary text-xs flex items-center gap-1.5">
+      <i data-lucide="award" class="w-4 h-4 text-brand-600"></i> Competency Framework
+    </a>
+  </div>
+
+  <!-- Search & Competency Selection Form -->
+  <div class="bg-white rounded-2xl border border-gov-200 p-6 shadow-sm space-y-4">
+    <div class="flex items-center justify-between border-b border-gov-100 pb-3">
+      <h3 class="text-xs font-bold text-gov-900 uppercase tracking-wider flex items-center gap-1.5">
+        <i data-lucide="sliders" class="w-4 h-4 text-brand-600"></i> Select Target Competency Requirements
+      </h3>
+      <span class="text-[11px] text-gov-500">Transparent Rule-Based Scoring Formula</span>
+    </div>
+
+    <form method="get" class="space-y-4">
+      
+      <!-- Competency Checkbox Pills -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-gov-700">Choose one or more competencies to match against:</label>
+        <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 bg-gov-50 rounded-xl border border-gov-200">
+          {% for comp in all_competencies %}
+          <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium cursor-pointer transition-colors {% if comp.id in selected_comp_ids %}bg-brand-600 text-white border-brand-600 font-semibold{% else %}bg-white text-gov-700 border-gov-300 hover:border-brand-500{% endif %}">
+            <input type="checkbox" name="competencies" value="{{ comp.id }}" {% if comp.id in selected_comp_ids %}checked{% endif %} class="hidden" onchange="this.form.submit()">
+            <span>{{ comp.name }}</span>
+            <span class="text-[10px] opacity-75">({{ comp.domain|slice:":4" }})</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Additional Filters -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
+        <div>
+          <label class="block font-semibold text-gov-700 mb-1">Minimum Years of Experience</label>
+          <input type="number" name="min_experience" value="{{ min_experience }}" min="0" max="30" class="w-full rounded-lg border-gov-300 text-xs">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gov-700 mb-1">Filter Competency Domain</label>
+          <select name="domain" class="w-full rounded-lg border-gov-300 text-xs" onchange="this.form.submit()">
+            <option value="">All Domains</option>
+            {% for dval, dlabel in domains %}
+            <option value="{{ dval }}" {% if domain_filter == dval %}selected{% endif %}>{{ dlabel }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="flex items-end gap-2">
+          <button type="submit" class="btn-primary py-2.5 px-4 font-semibold text-xs flex-1">
+            Calculate Matches
+          </button>
+          <a href="{% url 'competencies:trainer_discovery' %}" class="btn-secondary py-2.5 px-3 text-xs">
+            Reset
+          </a>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Recommendation Results Section -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-base font-bold text-gov-900 flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-brand-600"></i> Ranked Trainer Recommendations ({{ recommendations|length }})
+      </h2>
+      {% if selected_comp_ids %}
+      <span class="text-xs text-gov-500">Matching against {{ selected_comp_ids|length }} selected requirement{{ selected_comp_ids|pluralize }}</span>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for rec in recommendations %}
+      <div class="bg-white rounded-2xl border border-gov-200 shadow-sm p-6 flex flex-col justify-between space-y-4 hover:shadow-lg transition-shadow">
+        
+        <div class="space-y-4">
+          <!-- Header with Match Percentage -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gov-900 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                {{ rec.trainer.username|slice:":1"|upper }}
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gov-900">{{ rec.trainer.get_full_name_or_username }}</h3>
+                <p class="text-xs text-gov-500">{{ rec.trainer.department.name|default:"MoES" }}</p>
+                <p class="text-[10px] text-gov-400 font-medium">{{ rec.trainer.designation.title|default:"Senior Instructor" }}</p>
+              </div>
+            </div>
+
+            <!-- Match Score Pill -->
+            <div class="text-right">
+              <div class="px-2.5 py-1 rounded-xl bg-brand-50 border border-brand-200 text-brand-800 text-center">
+                <span class="text-lg font-black leading-none block">{{ rec.match_percentage }}%</span>
+                <span class="text-[9px] uppercase font-bold tracking-wider">Match</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bio / Experience summary -->
+          <div class="p-3 bg-gov-50 rounded-xl text-xs space-y-1 text-gov-700">
+            <p><strong>Experience:</strong> {{ rec.avg_experience_years }} years average across mapped skills</p>
+            <p><strong>Published Courses:</strong> {{ rec.courses_conducted }} conducted on platform</p>
+            {% if rec.profile.areas_of_expertise %}
+            <p class="text-gov-600 line-clamp-2"><strong>Focus:</strong> {{ rec.profile.areas_of_expertise }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Matching Competencies breakdown -->
+          <div class="space-y-1.5">
+            <span class="text-[11px] font-bold text-gov-700 uppercase tracking-wider block">
+              Matching Skills ({{ rec.matching_count }} of {{ rec.total_targets }})
+            </span>
+            <div class="flex flex-wrap gap-1.5">
+              {% for m in rec.matching_competencies %}
+              <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand-100 text-brand-900">
+                <i data-lucide="check" class="w-3 h-3 text-brand-600"></i>
+                {{ m.name }} ({{ m.proficiency }})
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Explainable Formula Breakdown Details -->
+          <details class="text-[11px] text-gov-500 pt-2 border-t border-gov-100">
+            <summary class="cursor-pointer font-semibold text-brand-700 hover:underline">Explain Score Calculation</summary>
+            <div class="mt-2 p-2.5 bg-gov-50 rounded-lg space-y-1 font-mono text-[10px]">
+              <p>Proficiency Points: +{{ rec.scoring_breakdown.proficiency_pts }}</p>
+              <p>Experience Bonus: +{{ rec.scoring_breakdown.experience_bonus }}</p>
+              <p>Courses Conducted Bonus: +{{ rec.scoring_breakdown.course_bonus }}</p>
+              <p class="font-bold pt-1 border-t border-gov-200">Raw Normalized Score: {{ rec.raw_score }} pts ({{ rec.match_percentage }}%)</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="pt-4 border-t border-gov-100 flex items-center justify-between text-xs">
+          <span class="text-gov-500">{{ rec.trainer.email }}</span>
+          <a href="{% url 'courses:catalog' %}?q={{ rec.trainer.last_name|default:rec.trainer.username }}" class="btn-primary text-xs py-1.5 px-3">
+            View Courses
+          </a>
+        </div>
+
+      </div>
+      {% empty %}
+      <div class="col-span-3 text-center py-16 bg-white rounded-2xl border border-dashed border-gov-300 p-8 space-y-3">
+        <div class="w-12 h-12 rounded-xl bg-gov-100 text-gov-500 flex items-center justify-center mx-auto">
+          <i data-lucide="user-search" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-bold text-gov-900">Select Competencies to Run Matching</h3>
+        <p class="text-xs text-gov-500 max-w-md mx-auto">
+          Check one or more competency areas above to view ranked trainer recommendations computed by the explainable matching engine.
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Learning: {{ course.title }} — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  
+  <!-- Course Learning Top Header -->
+  <div class="bg-gov-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-teal-300">{{ course.category.name|default:"Science" }}</span>
+      <h1 class="text-xl sm:text-2xl font-bold">{{ course.title }}</h1>
+      <p class="text-xs text-gov-400">Instructor: {{ course.trainer.get_full_name_or_username }} ({{ course.trainer.department.code|default:"MoES" }})</p>
+    </div>
+
+    {% if enrollment %}
+    <div class="bg-gov-800/80 p-4 rounded-xl border border-gov-700 min-w-[240px] space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-gov-300 font-medium">Course Progress</span>
+        <span class="font-bold text-teal-300">{{ enrollment.progress_percentage }}%</span>
+      </div>
+      <div class="w-full bg-gov-700 rounded-full h-2 overflow-hidden">
+        <div class="bg-brand-500 h-2 rounded-full transition-all duration-300" style="width: {{ enrollment.progress_percentage }}%"></div>
+      </div>
+      <div class="flex items-center justify-between text-[10px] text-gov-400 pt-1">
+        <span>{{ completed_module_ids|length }} of {{ modules|length }} Modules Done</span>
+        {% if enrollment.is_completed %}
+        <span class="text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Completed</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Learning Workspace Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left: Modules & Syllabus Drawer -->
+    <div class="lg:col-span-4 space-y-4">
+      <div class="bg-white rounded-2xl border border-gov-200 p-5 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold text-gov-900 uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-4 h-4 text-brand-600"></i> Course Navigation
+        </h3>
+
+        <div class="space-y-2">
+          {% for mod in modules %}
+          <a href="?module={{ mod.id }}" class="p-3 rounded-xl border block transition-colors {% if current_module.id == mod.id %}bg-brand-50 border-brand-500 text-brand-950 font-semibold{% else %}bg-gov-50/70 border-gov-200 text-gov-700 hover:bg-gov-100{% endif %}">
+            <div class="flex items-center justify-between text-xs">
+              <span class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold {% if mod.id in completed_module_ids %}bg-emerald-600 text-white{% else %}bg-gov-200 text-gov-700{% endif %}">
+                  {% if mod.id in completed_module_ids %}✓{% else %}{{ mod.order }}{% endif %}
+                </span>
+                <span class="truncate max-w-[180px]">{{ mod.title }}</span>
+              </span>
+              <span class="text-[10px] text-gov-400">{{ mod.resources.count }} res</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+
+        <!-- Assessment & Certification Milestone Actions -->
+        {% if assessment %}
+        <div class="pt-4 border-t border-gov-100 space-y-2">
+          <span class="block text-[11px] font-bold text-gov-700 uppercase tracking-wider">Final Examination</span>
+          <a href="{% url 'assessments:detail' course_slug=course.slug %}" class="btn-navy w-full text-xs py-2 flex items-center justify-center gap-2 shadow-sm">
+            <i data-lucide="award" class="w-4 h-4 text-brand-400"></i> Take Course Exam
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Feedback & Certificate Actions -->
+        <div class="pt-2 border-t border-gov-100 flex flex-col gap-2">
+          {% if enrollment.is_completed %}
+          <a href="{% url 'certificates:claim' enrollment_id=enrollment.id %}" class="btn-primary w-full text-xs py-2 text-center shadow-sm">
+            View / Claim Certificate
+          </a>
+          {% endif %}
+          <a href="{% url 'communications:course_feedback' slug=course.slug %}" class="btn-secondary w-full text-xs py-2 text-center">
+            Submit Course Feedback
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right: Current Module Content & Reader -->
+    <div class="lg:col-span-8 space-y-6">
+      {% if current_module %}
+      <div class="bg-white rounded-2xl border border-gov-200 p-8 shadow-sm space-y-6">
+        
+        <!-- Module Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gov-100 pb-4">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700">Module {{ current_module.order }}</span>
+            <h2 class="text-xl font-bold text-gov-900">{{ current_module.title }}</h2>
+          </div>
+
+          <!-- Module Completion Status & Button -->
+          <div>
+            {% if current_module.id in completed_module_ids %}
+            <span class="badge-green text-xs flex items-center gap-1.5 py-1 px-3">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> Completed
+            </span>
+            {% elif enrollment %}
+            <form method="post" action="{% url 'courses:module_complete' module_id=current_module.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-primary text-xs py-2 px-4 shadow-sm flex items-center gap-1.5">
+                <i data-lucide="check" class="w-4 h-4"></i> Mark as Completed
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if current_module.description %}
+        <p class="text-sm text-gov-600 leading-relaxed">{{ current_module.description }}</p>
+        {% endif %}
+
+        <!-- Resources Section -->
+        <div class="space-y-5 pt-2">
+          <h3 class="text-sm font-bold text-gov-900 flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-brand-600"></i> Module Resources ({{ current_module.resources.count }})
+          </h3>
+
+          <div class="space-y-4">
+            {% for res in current_module.resources.all %}
+            <div class="p-5 rounded-xl bg-gov-50 border border-gov-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs">
+                    {% if res.resource_type == 'VIDEO' %}
+                    <i data-lucide="video" class="w-4 h-4"></i>
+                    {% elif res.resource_type == 'PDF' %}
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    {% else %}
+                    <i data-lucide="link" class="w-4 h-4"></i>
+                    {% endif %}
+                  </span>
+                  <div>
+                    <h4 class="text-sm font-bold text-gov-900">{{ res.title }}</h4>
+                    <span class="text-[10px] text-gov-500">{{ res.get_resource_type_display }}</span>
+                  </div>
+                </div>
+
+                <!-- Download / External Link Button -->
+                {% if res.file %}
+                <a href="{{ res.file.url }}" download class="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 shadow-sm">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Download File
+                </a>
+                {% elif res.external_url %}
+                <a href="{{ res.external_url }}" target="_blank" rel="noopener noreferrer" class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5 shadow-sm">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Resource
+                </a>
+                {% endif %}
+              </div>
+
+              {% if res.text_content %}
+              <div class="p-4 bg-white rounded-lg border border-gov-200 text-xs text-gov-700 leading-relaxed prose prose-sm max-w-none">
+                {{ res.text_content|linebreaks }}
+              </div>
+              {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-xs text-gov-400 italic py-4">No learning resources uploaded for this module.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+      {% else %}
+      <div class="bg-white rounded-2xl border border-gov-200 p-8 shadow-sm text-center text-gov-500">
+        Please select a module from the syllabus navigation.
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+

@@ -1,0 +1,55 @@
+<footer class="bg-gov-900 border-t border-gov-800 text-gov-400 text-sm mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      
+      <!-- Brand & Mission -->
+      <div class="md:col-span-2 space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-white shadow-sm">
+            CC
+          </div>
+          <span class="text-base font-bold text-white tracking-tight">CAPACITY CONNECT</span>
+        </div>
+        <p class="text-xs text-gov-400 max-w-md leading-relaxed">
+          Digital Capacity Building & Learning Management Portal developed for the Ministry of Earth Sciences (MoES) and Central Organizations under Smart India Hackathon (SIH 2026 | Problem Statement ID: SIH26075).
+        </p>
+        <p class="text-[11px] text-gov-500 font-medium">Tagline: Learn. Develop. Connect. Grow.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Core Modules</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="{% url 'courses:catalog' %}" class="hover:text-white transition-colors">Course Catalogue</a></li>
+          <li><a href="{% url 'competencies:trainer_discovery' %}" class="hover:text-white transition-colors">Trainer Discovery</a></li>
+          <li><a href="{% url 'competencies:library' %}" class="hover:text-white transition-colors">Competency Library</a></li>
+          <li><a href="{% url 'communications:resource_library' %}" class="hover:text-white transition-colors">Knowledge Base</a></li>
+          <li><a href="{% url 'certificates:verify' %}" class="hover:text-white transition-colors">Certificate Verification</a></li>
+        </ul>
+      </div>
+
+      <!-- Government Framework -->
+      <div>
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Institutes</h4>
+        <ul class="space-y-2 text-xs">
+          <li><span class="text-gov-300">IMD</span> - India Meteorological Department</li>
+          <li><span class="text-gov-300">INCOIS</span> - Ocean Information Services</li>
+          <li><span class="text-gov-300">NCMRWF</span> - Medium Range Weather Forecasting</li>
+          <li><span class="text-gov-300">IITM</span> - Tropical Meteorology</li>
+          <li><span class="text-gov-300">NIOT</span> - Ocean Technology</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-gov-800 flex flex-col sm:flex-row items-center justify-between text-xs text-gov-500 gap-4">
+      <p>© 2026 Capacity Connect. Ministry of Earth Sciences (MoES) / Central Organizations. All rights reserved.</p>
+      <div class="flex items-center gap-4">
+        <span>SIH 2026 | SIH26075</span>
+        <span>•</span>
+        <a href="{% url 'core:about' %}" class="hover:text-gov-300">Architecture & Vision</a>
+      </div>
+    </div>
+  </div>
+</footer>
+

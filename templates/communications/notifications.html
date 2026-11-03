@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-3xl mx-auto">
+  
+  <div class="flex items-center justify-between pb-4 border-b border-gov-200">
+    <div>
+      <h1 class="text-2xl font-bold text-gov-900">Notifications & Alerts</h1>
+      <p class="text-xs text-gov-500">Real-time alerts for enrollments, assessment schedules, and certificate issuances.</p>
+    </div>
+    <span class="text-xs text-gov-500">{{ notifications|length }} total</span>
+  </div>
+
+  <div class="space-y-3">
+    {% for n in notifications %}
+    <div class="p-4 rounded-2xl bg-white border border-gov-200 shadow-sm flex items-start gap-4">
+      <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+        {% if n.notification_type == 'CERTIFICATE' %}
+        <i data-lucide="award" class="w-5 h-5"></i>
+        {% elif n.notification_type == 'ASSESSMENT' %}
+        <i data-lucide="check-square" class="w-5 h-5"></i>
+        {% elif n.notification_type == 'APPROVAL' %}
+        <i data-lucide="user-check" class="w-5 h-5"></i>
+        {% else %}
+        <i data-lucide="bell" class="w-5 h-5"></i>
+        {% endif %}
+      </div>
+
+      <div class="flex-1 space-y-1">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-gov-900">{{ n.title }}</h3>
+          <span class="text-[10px] text-gov-400">{{ n.created_at|date:"d M, H:i" }}</span>
+        </div>
+        <p class="text-xs text-gov-600">{{ n.message }}</p>
+        {% if n.target_url %}
+        <div class="pt-1">
+          <a href="{{ n.target_url }}" class="text-xs font-bold text-brand-600 hover:underline">
+            View Details →
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="p-12 bg-white rounded-2xl border border-dashed border-gov-300 text-center space-y-2 text-gov-500">
+      <div class="w-12 h-12 rounded-xl bg-gov-100 flex items-center justify-center mx-auto text-gov-400">
+        <i data-lucide="bell-off" class="w-6 h-6"></i>
+      </div>
+      <p class="text-sm font-semibold">No notifications right now.</p>
+      <p class="text-xs text-gov-400">You're completely caught up!</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+

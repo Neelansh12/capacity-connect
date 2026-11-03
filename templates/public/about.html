@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}About Capacity Connect | SIH 2026{% endblock %}
+
+{% block public_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+  <div class="text-center space-y-3">
+    <span class="badge-teal text-xs uppercase tracking-wider">SIH 2026 Problem Statement SIH26075</span>
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-gov-900">About Capacity Connect</h1>
+    <p class="text-base text-gov-600">Digital Capacity Building & Learning Management Portal for MoES</p>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gov-200 p-8 shadow-sm space-y-6 text-sm text-gov-700 leading-relaxed">
+    <h2 class="text-xl font-bold text-gov-900">1. Problem Context & Mission</h2>
+    <p>
+      Under the <strong>Smart India Hackathon 2026</strong> theme of <em>Smart Education & Administration</em>, this portal addresses problem statement <strong>SIH26075</strong> for the <strong>Ministry of Earth Sciences (MoES)</strong>. Central scientific bodies require a dedicated, secure, and centralized organizational platform for employee training, transparent trainer discovery, continuous skill tracking, and verified institutional certification.
+    </p>
+
+    <h2 class="text-xl font-bold text-gov-900">2. Architectural Decisions & Technology Stack</h2>
+    <p>
+      Capacity Connect is architected strictly as an enterprise-grade <strong>Django monolithic application using server-side rendering (SSR)</strong>. It operates using:
+    </p>
+    <ul class="list-disc pl-5 space-y-2">
+      <li><strong>Backend:</strong> Python, Django 5.x ORM, native sessions, form security, and role-based authorization.</li>
+      <li><strong>Database:</strong> PostgreSQL with relational integrity, unique constraints, and automated Django migrations.</li>
+      <li><strong>Frontend:</strong> Django Templates, compiled Tailwind CSS, TypeScript for interactivity, Chart.js for data analytics, and Lucide icons.</li>
+      <li><strong>Document Generation:</strong> ReportLab for automated verifiable PDF certificates and downloadable executive audit reports.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-gov-900">3. Transparent Rule-Based Recommendation Engine</h2>
+    <p>
+      Unlike opaque black-box classifiers, Capacity Connect employs a fully explainable mathematical scoring formula to rank trainers against organizational competency requirements. Scores account for exact competency matches, instructor proficiency weights (Expert to Beginner), documented domain experience, and historical course completion records.
+    </p>
+
+    <div class="pt-4 border-t border-gov-100 flex justify-between items-center text-xs text-gov-500">
+      <span>Tagline: Learn. Develop. Connect. Grow.</span>
+      <a href="{% url 'courses:catalog' %}" class="btn-primary text-xs py-1.5 px-4">Browse Courses</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

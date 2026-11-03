@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Certificate {{ certificate.certificate_id }} — Capacity Connect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <div class="flex items-center justify-between pb-4 border-b border-gov-200">
+    <div>
+      <h1 class="text-2xl font-bold text-gov-900">Certificate of Completion</h1>
+      <p class="text-xs text-gov-500">Official digital credential issued under Ministry of Earth Sciences (MoES) Capacity Building.</p>
+    </div>
+    <a href="{% url 'certificates:download' cert_id=certificate.certificate_id %}" class="btn-primary text-xs font-semibold flex items-center gap-1.5 shadow-md">
+      <i data-lucide="download" class="w-4 h-4"></i> Download PDF Certificate
+    </a>
+  </div>
+
+  <!-- Certificate Frame (Landscape Design Matching ReportLab PDF) -->
+  <div class="bg-white rounded-2xl border-4 border-gov-900 p-8 sm:p-14 shadow-2xl relative overflow-hidden text-center space-y-6">
+    <!-- Inner Teal Border -->
+    <div class="border-2 border-brand-500 p-8 sm:p-12 rounded-xl relative space-y-6">
+      
+      <div class="space-y-1">
+        <span class="text-xs font-bold uppercase tracking-widest text-brand-600">MINISTRY OF EARTH SCIENCES — CAPACITY CONNECT</span>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-gov-900 tracking-tight">CERTIFICATE OF COMPLETION</h2>
+        <p class="text-xs text-gov-400 italic">Learn. Develop. Connect. Grow.</p>
+      </div>
+
+      <p class="text-xs text-gov-600 font-medium">This is proudly presented to</p>
+
+      <h3 class="text-2xl sm:text-3xl font-extrabold text-gov-950 uppercase tracking-wide border-b-2 border-gov-200 pb-2 max-w-md mx-auto">
+        {{ certificate.employee.get_full_name|default:certificate.employee.username }}
+      </h3>
+
+      <p class="text-xs sm:text-sm text-gov-700 max-w-xl mx-auto leading-relaxed">
+        for successfully completing the institutional capacity-building training program
+      </p>
+
+      <h4 class="text-xl sm:text-2xl font-bold text-brand-700">
+        "{{ certificate.course.title }}"
+      </h4>
+
+      <p class="text-xs text-gov-500">
+        Lead Instructor: <strong>{{ certificate.course.trainer.get_full_name_or_username }}</strong> | Department: {{ certificate.employee.department.name|default:"MoES" }}
+      </p>
+
+      <!-- Signatures and Code Row -->
+      <div class="pt-8 border-t border-gov-200 flex flex-col sm:flex-row items-center justify-between text-left text-xs text-gov-600 gap-6">
+        <div>
+          <p class="font-bold text-gov-900">Date of Issue: {{ certificate.issued_at|date:"d F Y" }}</p>
+          <p class="text-[10px] text-gov-500">Capacity Building Commission / MoES</p>
+        </div>
+
+        <div class="text-center sm:text-center space-y-0.5">
+          <span class="inline-block px-2.5 py-1 bg-gov-100 rounded text-[11px] font-mono font-bold text-gov-800 border border-gov-300">
+            {{ certificate.certificate_id }}
+          </span>
+          <p class="text-[9px] text-gov-400">Verify at /certificates/verify/</p>
+        </div>
+
+        <div class="text-right">
+          <p class="font-bold text-gov-900">{{ certificate.authorized_signatory }}</p>
+          <p class="text-[10px] text-gov-500">Institutional Competency Authority</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+

@@ -82,3 +82,4 @@ Open your browser at `http://127.0.0.1:8000/`.
    - Sign out or open an incognito window.
    - Visit `/certificates/verify/`.
    - Paste the certificate ID and click **"Verify"** to confirm tamper-proof authenticity.
+

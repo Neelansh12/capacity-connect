@@ -95,3 +95,4 @@ erDiagram
         string authorized_signatory
     }
 ```
+

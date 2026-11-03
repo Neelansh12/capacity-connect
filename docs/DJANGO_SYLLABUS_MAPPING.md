@@ -58,3 +58,4 @@ This document maps all six core units of the advanced Django curriculum to the c
 - **Custom User Model:** Subclassed `AbstractUser` before initial migration (`accounts.User`) with custom `Role` and `ApprovalStatus` enums.
 - **Authentication & Security:** Native password hashing with PBKDF2/SHA256, session authentication, cookie expiry, login and logout workflows.
 - **Role-Based Authorization Decorators:** Custom decorators in `apps/accounts/decorators.py` enforcing authentication, administrative approval, and granular role permissions (`@admin_required`, `@trainer_required`, `@employee_required`).
+

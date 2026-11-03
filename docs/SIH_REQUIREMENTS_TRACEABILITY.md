@@ -16,3 +16,4 @@
 | **REQ-10** | MCQ Assessment Engine | `apps/assessments/models.py`, `apps/assessments/views.py` | `test_assessment_server_side_evaluation_and_pass`, `test_assessment_attempt_limit_enforcement` |
 | **REQ-11** | Public Certificate Verification | `apps/certificates/views.py` (`certificate_verify_view`), `templates/certificates/verify.html` | `test_public_certificate_verification` |
 | **REQ-12** | Database-Backed Chart.js Analytics | `apps/analytics/views.py` (`admin_dashboard_view`), Chart.js renderers | Verified no hardcoded chart statistics |
+

@@ -78,3 +78,4 @@ The platform strictly avoids fragile detached frontends or distributed microserv
 ### Analytics & Reports (`apps.analytics`)
 - Aggregates database counts and renders real Chart.js analytics across roles.
 - Employs ReportLab to compile institutional capacity audit PDF reports on demand.
+

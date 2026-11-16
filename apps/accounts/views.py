@@ -24,15 +24,11 @@ def register_view(request):
             password = form.cleaned_data['password']
             user.set_password(password)
 
-            # First user created becomes superuser/admin automatically
-            if User.objects.count() == 0:
-                user.role = User.Role.ADMIN
-                user.approval_status = User.ApprovalStatus.APPROVED
-                user.is_staff = True
-                user.is_superuser = True
-                user.approved_at = timezone.now()
-            else:
-                user.approval_status = User.ApprovalStatus.PENDING
+            # Public registration must never grant administrator privileges.
+            user.approval_status = User.ApprovalStatus.PENDING
+            user.is_staff = False
+            user.is_superuser = False
+            user.approved_at = None
 
             user.save()
 

@@ -44,6 +44,21 @@ def assessment_take_view(request, course_slug):
     course = get_object_or_404(Course, slug=course_slug)
     assessment = get_object_or_404(Assessment, course=course)
 
+    # Verify course enrollment before allowing an assessment attempt.
+    enrollment = Enrollment.objects.filter(
+        employee=request.user,
+        course=course
+    ).first()
+
+    if not enrollment and not (
+        request.user == course.trainer or request.user.is_admin_role()
+    ):
+        messages.error(
+            request,
+            "You must be enrolled in the course to attempt this assessment."
+        )
+        return redirect('courses:detail', slug=course.slug)
+
     # Check eligibility
     attempts_count = AssessmentAttempt.objects.filter(assessment=assessment, employee=request.user).count()
     if attempts_count >= assessment.max_attempts:

@@ -7,6 +7,8 @@ urlpatterns = [
     path('admin/', views.admin_dashboard_view, name='admin_dashboard'),
     path('trainer/', views.trainer_dashboard_view, name='trainer_dashboard'),
     path('employee/', views.employee_dashboard_view, name='employee_dashboard'),
-    path('admin/report/pdf/', views.download_admin_report_view, name='admin_report_pdf'),
+    # Matched to Project Report Specification (Page 19)
+    path('admin/report/download/', views.download_admin_report_view, name='admin_report_pdf'),
+    path('admin/report/pdf/', views.download_admin_report_view),
 ]
 

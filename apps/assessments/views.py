@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db import transaction, IntegrityError
 from django.utils import timezone
+from datetime import datetime
 from .models import Assessment, Question, AnswerOption, AssessmentAttempt, SubmittedAnswer
 from .forms import AssessmentForm, QuestionForm
 from apps.courses.models import Course, Enrollment
@@ -39,24 +41,18 @@ def assessment_detail_view(request, course_slug):
 
 @login_required
 @approval_required
-def assessment_take_view(request, course_slug):
-    """Active test taking screen with server-side validation and timer."""
+def take_assessment_view(request, course_slug):
+    """
+    Renders active test taking screen with server-side validation and timer initialization.
+    Matched to Project Report Specification (Page 14).
+    """
     course = get_object_or_404(Course, slug=course_slug)
     assessment = get_object_or_404(Assessment, course=course)
 
     # Verify course enrollment before allowing an assessment attempt.
-    enrollment = Enrollment.objects.filter(
-        employee=request.user,
-        course=course
-    ).first()
-
-    if not enrollment and not (
-        request.user == course.trainer or request.user.is_admin_role()
-    ):
-        messages.error(
-            request,
-            "You must be enrolled in the course to attempt this assessment."
-        )
+    enrollment = Enrollment.objects.filter(employee=request.user, course=course).first()
+    if not enrollment and not (request.user == course.trainer or request.user.is_admin_role()):
+        messages.error(request, "You must be enrolled in the course to attempt this assessment.")
         return redirect('courses:detail', slug=course.slug)
 
     # Check eligibility
@@ -74,75 +70,9 @@ def assessment_take_view(request, course_slug):
         messages.warning(request, "No questions have been configured for this assessment yet.")
         return redirect('assessments:detail', course_slug=course.slug)
 
-    if request.method == 'POST':
-        # Server-side score evaluation
-        total_marks = 0.0
-        score_obtained = 0.0
-
-        attempt_num = attempts_count + 1
-        attempt = AssessmentAttempt.objects.create(
-            assessment=assessment,
-            employee=request.user,
-            attempt_number=attempt_num,
-            total_marks=0.0,
-            score_obtained=0.0,
-            percentage_obtained=0.0,
-            passed=False
-        )
-
-        for q in questions:
-            total_marks += q.marks
-            selected_option_id = request.POST.get(f'question_{q.id}')
-            selected_option = None
-            is_correct = False
-
-            if selected_option_id:
-                try:
-                    selected_option = q.options.get(id=selected_option_id)
-                    if selected_option.is_correct:
-                        is_correct = True
-                        score_obtained += q.marks
-                except AnswerOption.DoesNotExist:
-                    pass
-
-            SubmittedAnswer.objects.create(
-                attempt=attempt,
-                question=q,
-                selected_option=selected_option,
-                is_correct=is_correct
-            )
-
-        percentage = round((score_obtained / total_marks) * 100.0, 1) if total_marks > 0 else 0.0
-        passed = percentage >= assessment.passing_percentage
-
-        attempt.total_marks = total_marks
-        attempt.score_obtained = score_obtained
-        attempt.percentage_obtained = percentage
-        attempt.passed = passed
-        attempt.save()
-
-        # Update enrollment completion status if passed
-        enrollment = Enrollment.objects.filter(employee=request.user, course=course).first()
-        if enrollment and passed:
-            enrollment.is_completed = True
-            enrollment.completed_at = timezone.now()
-            enrollment.save()
-
-            # Attempt automatic certificate issuance
-            try:
-                from apps.certificates.services import issue_certificate_if_eligible
-                cert = issue_certificate_if_eligible(enrollment)
-                if cert:
-                    messages.success(request, "Congratulations! You passed the assessment and your Certificate of Completion has been issued!")
-            except Exception as e:
-                pass
-
-        if passed:
-            messages.success(request, f"Assessment completed! You scored {percentage}%. You PASSED!")
-        else:
-            messages.warning(request, f"Assessment completed. You scored {percentage}%. Passing criteria: {assessment.passing_percentage}%.")
-
-        return redirect('assessments:result', attempt_id=attempt.id)
+    # Server-side timer initialization: store start timestamp in session
+    session_timer_key = f'assessment_start_{assessment.id}'
+    request.session[session_timer_key] = timezone.now().isoformat()
 
     return render(request, 'assessments/take.html', {
         'course': course,
@@ -150,6 +80,136 @@ def assessment_take_view(request, course_slug):
         'questions': questions,
         'attempt_number': attempts_count + 1,
     })
+
+@login_required
+@approval_required
+def submit_assessment_view(request, course_slug):
+    """
+    Server-side submission, scoring, race-condition protected attempt creation,
+    and server-enforced duration check. Matched to Project Report Specification (Page 14).
+    """
+    if request.method != 'POST':
+        return redirect('assessments:take', course_slug=course_slug)
+
+    course = get_object_or_404(Course, slug=course_slug)
+    assessment = get_object_or_404(Assessment, course=course)
+
+    # Verify course enrollment
+    enrollment = Enrollment.objects.filter(employee=request.user, course=course).first()
+    if not enrollment and not (request.user == course.trainer or request.user.is_admin_role()):
+        messages.error(request, "You must be enrolled in the course to submit this assessment.")
+        return redirect('courses:detail', slug=course.slug)
+
+    # Server-Side Timer Validation (enforce assessment.duration_minutes)
+    session_timer_key = f'assessment_start_{assessment.id}'
+    start_iso = request.session.pop(session_timer_key, None)
+    started_at = timezone.now()
+    is_timed_out = False
+
+    if start_iso:
+        try:
+            started_at = datetime.fromisoformat(start_iso)
+            elapsed_seconds = (timezone.now() - started_at).total_seconds()
+            # Allow duration + 90 seconds grace period for network submission latency
+            allowed_seconds = (assessment.duration_minutes * 60) + 90
+            if elapsed_seconds > allowed_seconds:
+                is_timed_out = True
+        except (ValueError, TypeError):
+            pass
+
+    # Race-condition protected attempt creation using atomic database transaction
+    try:
+        with transaction.atomic():
+            attempts_count = AssessmentAttempt.objects.filter(
+                assessment=assessment, 
+                employee=request.user
+            ).count()
+
+            if attempts_count >= assessment.max_attempts:
+                messages.error(request, "You have reached the maximum allowed attempts for this assessment.")
+                return redirect('assessments:detail', course_slug=course.slug)
+
+            attempt_num = attempts_count + 1
+            attempt = AssessmentAttempt.objects.create(
+                assessment=assessment,
+                employee=request.user,
+                attempt_number=attempt_num,
+                started_at=started_at,
+                is_timed_out=is_timed_out,
+                total_marks=0.0,
+                score_obtained=0.0,
+                percentage_obtained=0.0,
+                passed=False
+            )
+    except IntegrityError:
+        messages.error(request, "An attempt was already recorded in another concurrent session.")
+        return redirect('assessments:detail', course_slug=course.slug)
+
+    questions = assessment.questions.prefetch_related('options').order_by('order')
+    total_marks = 0.0
+    score_obtained = 0.0
+
+    for q in questions:
+        total_marks += q.marks
+        selected_option_id = request.POST.get(f'question_{q.id}')
+        selected_option = None
+        is_correct = False
+
+        if selected_option_id:
+            try:
+                selected_option = q.options.get(id=selected_option_id)
+                if selected_option.is_correct:
+                    is_correct = True
+                    score_obtained += q.marks
+            except AnswerOption.DoesNotExist:
+                pass
+
+        SubmittedAnswer.objects.create(
+            attempt=attempt,
+            question=q,
+            selected_option=selected_option,
+            is_correct=is_correct
+        )
+
+    percentage = round((score_obtained / total_marks) * 100.0, 1) if total_marks > 0 else 0.0
+    passed = percentage >= assessment.passing_percentage and not is_timed_out
+
+    attempt.total_marks = total_marks
+    attempt.score_obtained = score_obtained
+    attempt.percentage_obtained = percentage
+    attempt.passed = passed
+    attempt.save()
+
+    # Update enrollment completion status if passed
+    enrollment = Enrollment.objects.filter(employee=request.user, course=course).first()
+    if enrollment and passed:
+        enrollment.is_completed = True
+        enrollment.completed_at = timezone.now()
+        enrollment.save()
+
+        # Automatic certificate issuance
+        try:
+            from apps.certificates.services import issue_certificate_if_eligible
+            cert = issue_certificate_if_eligible(enrollment)
+            if cert:
+                messages.success(request, "Congratulations! You passed the assessment and your Certificate of Completion has been issued!")
+        except Exception:
+            pass
+
+    if is_timed_out:
+        messages.warning(request, f"Assessment submission exceeded the allowed duration of {assessment.duration_minutes} minutes. Marked as timed out.")
+    elif passed:
+        messages.success(request, f"Assessment completed! You scored {percentage}%. You PASSED!")
+    else:
+        messages.warning(request, f"Assessment completed. You scored {percentage}%. Passing criteria: {assessment.passing_percentage}%.")
+
+    return redirect('assessments:result', attempt_id=attempt.id)
+
+def assessment_take_view(request, course_slug):
+    """Unified entry point routing to take_assessment_view (GET) or submit_assessment_view (POST)."""
+    if request.method == 'POST':
+        return submit_assessment_view(request, course_slug)
+    return take_assessment_view(request, course_slug)
 
 @login_required
 @approval_required

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db.models import Count
 from apps.courses.models import Course, Category, Enrollment
 from apps.competencies.models import Competency
@@ -9,6 +9,9 @@ User = get_user_model()
 
 def landing_view(request):
     """Public portal landing page."""
+    if request.user.is_authenticated:
+        return redirect('accounts:dashboard_redirect')
+
     featured_courses = Course.objects.filter(status=Course.Status.PUBLISHED).select_related('trainer', 'category').annotate(
         enrolled_count=Count('enrollments')
     ).order_by('-enrolled_count')[:6]

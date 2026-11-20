@@ -4,6 +4,8 @@ ReportLab PDF Generation with Capacity Connect Branding
 """
 
 import io
+import os
+import unicodedata
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from reportlab.lib.pagesizes import letter, landscape
@@ -12,8 +14,36 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.graphics.shapes import Drawing, Rect, Line, Circle
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from .models import Certificate
 from apps.assessments.models import AssessmentAttempt
+
+FONT_REGULAR = "Helvetica"
+FONT_BOLD = "Helvetica-Bold"
+
+for ttf_path, name in [
+    ("C:/Windows/Fonts/arial.ttf", "ArialUnicode"),
+    ("C:/Windows/Fonts/arialbd.ttf", "ArialUnicode-Bold")
+]:
+    if os.path.exists(ttf_path):
+        try:
+            pdfmetrics.registerFont(TTFont(name, ttf_path))
+            if name == "ArialUnicode":
+                FONT_REGULAR = "ArialUnicode"
+            elif name == "ArialUnicode-Bold":
+                FONT_BOLD = "ArialUnicode-Bold"
+        except Exception:
+            pass
+
+def safe_str(val):
+    """Sanitize string for ReportLab drawing, normalizing non-latin1 unicode characters."""
+    if not val:
+        return ""
+    val = str(val)
+    if FONT_REGULAR == "Helvetica":
+        val = unicodedata.normalize('NFKD', val).encode('ascii', 'ignore').decode('ascii')
+    return val
 
 def check_certificate_eligibility(enrollment):
     """
@@ -99,26 +129,26 @@ def generate_certificate_pdf_buffer(certificate):
     p.line(width - 32, 32, width - 32, 32 + corner_size)
 
     # Header Branding
-    p.setFont("Helvetica-Bold", 14)
+    p.setFont(FONT_BOLD, 14)
     p.setFillColor(colors.HexColor('#0d9488'))
     p.drawCentredString(width / 2.0, height - 70, "MINISTRY OF EARTH SCIENCES — CAPACITY CONNECT")
 
-    p.setFont("Helvetica-Bold", 28)
+    p.setFont(FONT_BOLD, 28)
     p.setFillColor(colors.HexColor('#0f172a'))
     p.drawCentredString(width / 2.0, height - 110, "CERTIFICATE OF COMPLETION")
 
-    p.setFont("Helvetica", 11)
+    p.setFont(FONT_REGULAR, 11)
     p.setFillColor(colors.HexColor('#64748b'))
     p.drawCentredString(width / 2.0, height - 130, "Learn. Develop. Connect. Grow.")
 
     # Main Body Text
-    p.setFont("Helvetica", 13)
+    p.setFont(FONT_REGULAR, 13)
     p.setFillColor(colors.HexColor('#334155'))
     p.drawCentredString(width / 2.0, height - 180, "This is proudly presented to")
 
     # Recipient Name
-    employee_name = certificate.employee.get_full_name() or certificate.employee.username
-    p.setFont("Helvetica-Bold", 24)
+    employee_name = safe_str(certificate.employee.get_full_name() or certificate.employee.username)
+    p.setFont(FONT_BOLD, 24)
     p.setFillColor(colors.HexColor('#0f172a'))
     p.drawCentredString(width / 2.0, height - 220, employee_name.upper())
 
@@ -128,46 +158,46 @@ def generate_certificate_pdf_buffer(certificate):
     p.line(width / 2.0 - 180, height - 228, width / 2.0 + 180, height - 228)
 
     # Description
-    p.setFont("Helvetica", 12)
+    p.setFont(FONT_REGULAR, 12)
     p.setFillColor(colors.HexColor('#475569'))
     p.drawCentredString(width / 2.0, height - 260, "for successfully completing the institutional capacity-building training program")
 
     # Course Title
-    p.setFont("Helvetica-Bold", 18)
+    p.setFont(FONT_BOLD, 18)
     p.setFillColor(colors.HexColor('#0d9488'))
-    p.drawCentredString(width / 2.0, height - 295, f'"{certificate.course.title}"')
+    p.drawCentredString(width / 2.0, height - 295, f'"{safe_str(certificate.course.title)}"')
 
     # Trainer and Department Info
-    trainer_name = certificate.course.trainer.get_full_name() or certificate.course.trainer.username
-    dept_name = certificate.employee.department.name if certificate.employee.department else "Ministry of Earth Sciences"
-    p.setFont("Helvetica", 11)
+    trainer_name = safe_str(certificate.course.trainer.get_full_name() or certificate.course.trainer.username)
+    dept_name = safe_str(certificate.employee.department.name if certificate.employee.department else "Ministry of Earth Sciences")
+    p.setFont(FONT_REGULAR, 11)
     p.setFillColor(colors.HexColor('#64748b'))
     p.drawCentredString(width / 2.0, height - 325, f"Lead Instructor: {trainer_name}  |  Department: {dept_name}")
 
     # Signatures & Verification Row
-    p.setFont("Helvetica-Bold", 10)
+    p.setFont(FONT_BOLD, 10)
     p.setFillColor(colors.HexColor('#0f172a'))
 
     # Left: Issuance Date
     issue_date = certificate.issued_at.strftime('%d %B %Y')
     p.drawString(60, 95, f"Date of Issue: {issue_date}")
-    p.setFont("Helvetica", 9)
+    p.setFont(FONT_REGULAR, 9)
     p.setFillColor(colors.HexColor('#64748b'))
     p.drawString(60, 80, "Capacity Building Commission / MoES")
 
     # Center: Certificate ID & Verification Code
-    p.setFont("Helvetica-Bold", 9)
+    p.setFont(FONT_BOLD, 9)
     p.setFillColor(colors.HexColor('#0f172a'))
     p.drawCentredString(width / 2.0, 95, f"Certificate ID: {certificate.certificate_id}")
-    p.setFont("Helvetica", 8)
+    p.setFont(FONT_REGULAR, 8)
     p.setFillColor(colors.HexColor('#64748b'))
     p.drawCentredString(width / 2.0, 80, f"Verify at /certificates/verify/?id={certificate.certificate_id}")
 
     # Right: Authorized Signatory
-    p.setFont("Helvetica-Bold", 10)
+    p.setFont(FONT_BOLD, 10)
     p.setFillColor(colors.HexColor('#0f172a'))
-    p.drawRightString(width - 60, 95, certificate.authorized_signatory)
-    p.setFont("Helvetica", 9)
+    p.drawRightString(width - 60, 95, safe_str(certificate.authorized_signatory))
+    p.setFont(FONT_REGULAR, 9)
     p.setFillColor(colors.HexColor('#64748b'))
     p.drawRightString(width - 60, 80, "Institutional Competency Authority")
 

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db import models
 from django.utils import timezone
 from .models import Course, CourseModule, LearningResource, Enrollment, ModuleProgress, Category
@@ -30,13 +31,18 @@ def course_catalog_view(request):
 
     categories = Category.objects.all()
 
+    paginator = Paginator(courses, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     # Track enrolled course IDs for authenticated users
     enrolled_course_ids = []
     if request.user.is_authenticated:
         enrolled_course_ids = list(Enrollment.objects.filter(employee=request.user).values_list('course_id', flat=True))
 
     return render(request, 'courses/catalog.html', {
-        'courses': courses,
+        'courses': page_obj,
+        'page_obj': page_obj,
         'categories': categories,
         'selected_category': category_slug,
         'selected_difficulty': difficulty,
@@ -89,6 +95,9 @@ def course_enroll_view(request, slug):
 
     return redirect('courses:learn', slug=course.slug)
 
+# Alias matching Project Report Specification (Page 13)
+enroll_view = course_enroll_view
+
 @login_required
 @approval_required
 def course_learn_view(request, slug):
@@ -131,6 +140,9 @@ def course_learn_view(request, slug):
         'assessment': assessment,
         'is_author': is_author,
     })
+
+# Alias matching Project Report Specification (Page 13)
+learn_view = course_learn_view
 
 @login_required
 @approval_required

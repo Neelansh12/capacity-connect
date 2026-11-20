@@ -69,7 +69,9 @@ class AssessmentAttempt(models.Model):
     total_marks = models.FloatField(default=0.0)
     percentage_obtained = models.FloatField(default=0.0)
     passed = models.BooleanField(default=False)
+    started_at = models.DateTimeField(default=timezone.now)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    is_timed_out = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-submitted_at']

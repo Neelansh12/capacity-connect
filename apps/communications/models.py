@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from apps.core.validators import validate_resource_file
 
 class Announcement(models.Model):
     class Type(models.TextChoices):
@@ -79,7 +80,7 @@ class TrainerResource(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=30, choices=Category.choices, default=Category.MANUAL)
-    file = models.FileField(upload_to='resources/library/', blank=True, null=True)
+    file = models.FileField(upload_to='resources/library/', blank=True, null=True, validators=[validate_resource_file])
     external_link = models.URLField(blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='uploaded_library_resources')
     created_at = models.DateTimeField(auto_now_add=True)

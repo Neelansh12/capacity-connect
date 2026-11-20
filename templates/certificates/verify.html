@@ -2,7 +2,75 @@
 
 {% block title %}Verify Certificate Authenticity — Capacity Connect{% endblock %}
 
-{% block public_content %}
+{% block content %}
+<div class="min-h-[75vh] py-12 px-4 sm:px-6 lg:px-8 bg-gov-50 flex items-center justify-center">
+  <div class="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-gov-200 shadow-xl">
+    
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 rounded-xl bg-brand-600 text-white font-bold flex items-center justify-center mx-auto text-lg shadow-sm">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold text-gov-900 tracking-tight">Public Certificate Verification</h1>
+      <p class="text-xs text-gov-500">Ministry of Earth Sciences (MoES) Credential Registry</p>
+    </div>
+
+    <!-- Verification Search Form -->
+    <form method="get" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gov-700 uppercase tracking-wider mb-1.5">
+          Enter Certificate ID or Verification Code
+        </label>
+        <div class="relative">
+          <input type="text" name="id" value="{{ query_id }}" placeholder="e.g. CC-2026-A8F3-9021" class="w-full rounded-xl border-gov-300 pl-10 text-sm font-mono uppercase tracking-wider focus:border-brand-500 focus:ring-brand-500">
+          <i data-lucide="search" class="w-4 h-4 text-gov-400 absolute left-3.5 top-3.5"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary w-full py-2.5 text-sm font-semibold shadow-md">
+        Verify Credential Status
+      </button>
+    </form>
+
+    <!-- Verification Results Card -->
+    {% if searched %}
+      {% if is_valid %}
+      <div class="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-4 text-xs text-emerald-950">
+        <div class="flex items-center gap-2 font-bold text-emerald-800 text-sm">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
+          <span>Official Certificate Authenticated & Valid</span>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-emerald-200 text-xs">
+          <p><strong>Certificate ID:</strong> <span class="font-mono">{{ certificate.certificate_id }}</span></p>
+          <p><strong>Recipient Name:</strong> {{ certificate.employee.get_full_name|default:certificate.employee.username }}</p>
+          <p><strong>Course Title:</strong> {{ certificate.course.title }}</p>
+          <p><strong>Issuing Authority:</strong> {{ certificate.authorized_signatory }}</p>
+          <p><strong>Department:</strong> {{ certificate.employee.department.name|default:"MoES" }}</p>
+          <p><strong>Date of Completion:</strong> {{ certificate.issued_at|date:"d F Y" }}</p>
+        </div>
+
+        <div class="pt-2">
+          <a href="{% url 'certificates:view' cert_id=certificate.certificate_id %}" class="btn-primary text-xs py-1.5 px-4 shadow-sm inline-block">
+            View Certificate Document
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <div class="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-center space-y-2 text-xs text-rose-900">
+        <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+          <i data-lucide="x-circle" class="w-6 h-6"></i>
+        </div>
+        <p class="font-bold text-sm">No Matching Credential Found</p>
+        <p class="text-gov-600">The certificate ID or code provided could not be verified in the MoES Capacity Connect official database.</p>
+      </div>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block unauth_content %}
 <div class="min-h-[75vh] py-12 px-4 sm:px-6 lg:px-8 bg-gov-50 flex items-center justify-center">
   <div class="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-gov-200 shadow-xl">
     

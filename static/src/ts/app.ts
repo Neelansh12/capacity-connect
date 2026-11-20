@@ -3,16 +3,30 @@
  * SIH26075 - Ministry of Earth Sciences (MoES) Portal
  */
 
-// Mobile sidebar toggle
+// Sidebar toggle and collapse
 export function initSidebar(): void {
   const toggleBtn = document.getElementById('sidebar-toggle');
   const sidebar = document.getElementById('main-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
+  const mainContent = document.getElementById('main-content');
+  const footerContainer = document.getElementById('footer-container');
 
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
-      if (backdrop) backdrop.classList.toggle('hidden');
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) {
+        sidebar.classList.toggle('-translate-x-full');
+        if (backdrop) backdrop.classList.toggle('hidden');
+      } else {
+        // Desktop toggle: hide/show sidebar and adjust main padding
+        sidebar.classList.toggle('lg:translate-x-0');
+        if (mainContent) {
+          mainContent.classList.toggle('lg:pl-64');
+        }
+        if (footerContainer) {
+          footerContainer.classList.toggle('lg:pl-64');
+        }
+      }
     });
   }
 
@@ -98,16 +112,47 @@ export function initTableFilter(searchInputId: string, tableId: string): void {
   });
 }
 
+// Real-Time Notification Poller (Achieves dynamic alerts claimed in project report)
+export function initRealtimeNotifications(): void {
+  const badge = document.getElementById('navbar-notif-badge');
+  if (!badge) return;
+
+  const fetchUnread = async () => {
+    try {
+      const res = await fetch('/communications/notifications/unread/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.unread_count || 0;
+        if (count > 0) {
+          badge.textContent = String(count);
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    } catch {
+      // Graceful silence on network delay
+    }
+  };
+
+  // Poll every 12 seconds for real-time notification badge updates
+  setInterval(fetchUnread, 12000);
+}
+
 // Initialize on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initUserMenu();
   initToasts();
+  initRealtimeNotifications();
 });
 
 // Expose utilities on window for inline dashboard scripting
 (window as unknown as Record<string, unknown>).CapacityConnect = {
   initAssessmentTimer,
   initTableFilter,
+  initRealtimeNotifications,
 };
 

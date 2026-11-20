@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
 from django.utils import timezone
+from apps.core.validators import validate_resource_file
 
 class Category(models.Model):
     name = models.CharField(max_length=120, unique=True)
@@ -102,7 +103,7 @@ class LearningResource(models.Model):
     module = models.ForeignKey(CourseModule, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)
     resource_type = models.CharField(max_length=20, choices=ResourceType.choices, default=ResourceType.PDF)
-    file = models.FileField(upload_to='resources/', blank=True, null=True)
+    file = models.FileField(upload_to='resources/', blank=True, null=True, validators=[validate_resource_file])
     external_url = models.URLField(blank=True, help_text="e.g. YouTube, MoES archive, documentation")
     text_content = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=1)

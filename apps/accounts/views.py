@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.utils import timezone
 from .models import User, EmployeeProfile, TrainerProfile, Department, Designation
 from .forms import (
@@ -24,11 +25,19 @@ def register_view(request):
             password = form.cleaned_data['password']
             user.set_password(password)
 
-            # Public registration must never grant administrator privileges.
-            user.approval_status = User.ApprovalStatus.PENDING
-            user.is_staff = False
-            user.is_superuser = False
-            user.approved_at = None
+            # Document Bootstrap Specification: The first user to register becomes ADMIN and superuser
+            is_first_user = (User.objects.count() == 0)
+            if is_first_user:
+                user.role = User.Role.ADMIN
+                user.approval_status = User.ApprovalStatus.APPROVED
+                user.is_staff = True
+                user.is_superuser = True
+                user.approved_at = timezone.now()
+            else:
+                user.approval_status = User.ApprovalStatus.PENDING
+                user.is_staff = False
+                user.is_superuser = False
+                user.approved_at = None
 
             user.save()
 
@@ -41,10 +50,16 @@ def register_view(request):
             elif user.role == User.Role.TRAINER:
                 TrainerProfile.objects.create(user=user)
 
-            messages.success(
-                request, 
-                "Registration successful! Your account is pending administrative approval."
-            )
+            if is_first_user:
+                messages.success(
+                    request,
+                    "System initialized! First user registered and bootstrapped as Administrator with full privileges."
+                )
+            else:
+                messages.success(
+                    request, 
+                    "Registration successful! Your account is pending administrative approval."
+                )
             return redirect('accounts:login')
     else:
         form = UserRegistrationForm()
@@ -180,8 +195,13 @@ def admin_user_list_view(request):
 
     departments = Department.objects.all()
 
+    paginator = Paginator(users, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'admin_dashboard/user_list.html', {
-        'users': users,
+        'users': page_obj,
+        'page_obj': page_obj,
         'departments': departments,
         'role_filter': role_filter,
         'status_filter': status_filter,

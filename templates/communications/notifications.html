@@ -10,7 +10,18 @@
       <h1 class="text-2xl font-bold text-gov-900">Notifications & Alerts</h1>
       <p class="text-xs text-gov-500">Real-time alerts for enrollments, assessment schedules, and certificate issuances.</p>
     </div>
-    <span class="text-xs text-gov-500">{{ notifications|length }} total</span>
+    <div class="flex items-center gap-3">
+      {% if unread_count > 0 %}
+      <form method="post" action="{% url 'communications:notifications' %}" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="mark_all_read">
+        <button type="submit" class="text-xs font-semibold text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors border border-brand-200">
+          Mark all as read
+        </button>
+      </form>
+      {% endif %}
+      <span class="text-xs text-gov-500">{{ notifications|length }} total</span>
+    </div>
   </div>
 
   <div class="space-y-3">

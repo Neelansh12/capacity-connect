@@ -4,17 +4,46 @@ ReportLab implementation for institutional capacity building audits.
 """
 
 import io
+import os
+import unicodedata
 from django.utils import timezone
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from django.contrib.auth import get_user_model
 from apps.courses.models import Course, Enrollment
 from apps.certificates.models import Certificate
 from apps.accounts.models import Department
 
 User = get_user_model()
+
+FONT_REGULAR = "Helvetica"
+FONT_BOLD = "Helvetica-Bold"
+
+for ttf_path, name in [
+    ("C:/Windows/Fonts/arial.ttf", "ArialUnicode"),
+    ("C:/Windows/Fonts/arialbd.ttf", "ArialUnicode-Bold")
+]:
+    if os.path.exists(ttf_path):
+        try:
+            pdfmetrics.registerFont(TTFont(name, ttf_path))
+            if name == "ArialUnicode":
+                FONT_REGULAR = "ArialUnicode"
+            elif name == "ArialUnicode-Bold":
+                FONT_BOLD = "ArialUnicode-Bold"
+        except Exception:
+            pass
+
+def safe_str(val):
+    if not val:
+        return ""
+    val = str(val)
+    if FONT_REGULAR == "Helvetica":
+        val = unicodedata.normalize('NFKD', val).encode('ascii', 'ignore').decode('ascii')
+    return val
 
 def generate_admin_report_pdf():
     buffer = io.BytesIO()

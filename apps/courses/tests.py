@@ -70,3 +70,9 @@ class CoursesTestCase(TestCase):
         self.assertEqual(enrollment.progress_percentage, 100.0)
         self.assertTrue(enrollment.is_completed)
 
+    def test_view_name_matching_specification(self):
+        """Verify enroll_view and learn_view match report specification."""
+        from apps.courses.views import enroll_view, learn_view
+        self.assertTrue(callable(enroll_view))
+        self.assertTrue(callable(learn_view))
+

@@ -23,7 +23,7 @@
   </div>
 
   <!-- Assessment Questions Form -->
-  <form id="assessment-form" method="post" class="space-y-6">
+  <form id="assessment-form" method="post" action="{% url 'assessments:submit' course.slug %}" class="space-y-6">
     {% csrf_token %}
 
     {% for q in questions %}

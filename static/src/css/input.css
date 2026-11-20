@@ -4,7 +4,11 @@
 
 @layer base {
   body {
-    @apply bg-gov-50 text-gov-800 antialiased font-sans min-h-screen flex flex-col;
+    @apply bg-gov-50 text-black antialiased font-sans min-h-screen flex flex-col;
+    color: #000000;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
   }
 }
 
@@ -13,7 +17,7 @@
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gov-700 bg-white hover:bg-gov-50 active:bg-gov-100 border border-gov-300 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gov-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-black bg-white hover:bg-gov-50 active:bg-gov-100 border border-gov-300 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-navy {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-gov-900 hover:bg-gov-800 active:bg-gov-950 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gov-700 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
@@ -22,22 +26,22 @@
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .card {
-    @apply bg-white rounded-xl border border-gov-200 shadow-sm p-6;
+    @apply bg-white rounded-xl border border-gov-200 shadow-sm p-6 text-black;
   }
   .badge-teal {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-900 border border-brand-200;
   }
   .badge-blue {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gov-100 text-gov-900 border border-gov-300;
   }
   .badge-green {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-950 border border-emerald-300;
   }
   .badge-amber {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-950 border border-amber-300;
   }
   .badge-gray {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gov-100 text-gov-700;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gov-200/70 text-black border border-gov-300;
   }
 }
 

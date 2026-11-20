@@ -73,3 +73,32 @@ class AssessmentsTestCase(TestCase):
         response = self.client.get(reverse('assessments:take', kwargs={'course_slug': self.course.slug}))
         self.assertRedirects(response, reverse('assessments:detail', kwargs={'course_slug': self.course.slug}))
 
+    def test_view_name_matching_specification(self):
+        """Verify that take_assessment_view and submit_assessment_view match report specification."""
+        from apps.assessments.views import take_assessment_view, submit_assessment_view
+        self.assertTrue(callable(take_assessment_view))
+        self.assertTrue(callable(submit_assessment_view))
+
+    def test_assessment_server_timer_timeout_enforcement(self):
+        """Verify server enforces duration limit when submission time has expired."""
+        from datetime import timedelta
+        from django.utils import timezone
+
+        self.client.login(username='employee_a', password='Password@123')
+
+        # Simulate assessment start 20 minutes ago (allowed: 15 minutes)
+        session = self.client.session
+        past_time = timezone.now() - timedelta(minutes=20)
+        session[f'assessment_start_{self.assessment.id}'] = past_time.isoformat()
+        session.save()
+
+        post_data = {
+            f'question_{self.q1.id}': str(self.opt1_correct.id)
+        }
+        response = self.client.post(reverse('assessments:submit', kwargs={'course_slug': self.course.slug}), post_data)
+
+        attempt = AssessmentAttempt.objects.filter(assessment=self.assessment, employee=self.employee).first()
+        self.assertIsNotNone(attempt)
+        self.assertTrue(attempt.is_timed_out)
+        self.assertFalse(attempt.passed)
+

@@ -9,37 +9,50 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6', // Teal accent
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316', // Primary vibrant orange
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+          950: '#431407',
         },
         gov: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a', // Deep Navy
-          950: '#020617',
+          50: '#f4f7f5',  // Clean subtle minty-white surface
+          100: '#e5ece7',
+          200: '#cdd9d1',
+          300: '#9fb5a6',
+          400: '#6d8c76',
+          500: '#4a6b54',
+          600: '#324e3a',
+          700: '#223828',
+          800: '#14251a',
+          900: '#0b1910', // Deep Forest Dark Green
+          950: '#050d08', // Ultra Dark Green
         },
         navy: {
-          800: '#1e3a8a',
-          900: '#172554',
+          800: '#14251a',
+          900: '#0b1910',
+        },
+        forest: {
+          50: '#f2f8f4',
+          100: '#e1efe5',
+          200: '#c4dfcd',
+          300: '#9ac8a9',
+          400: '#69a87d',
+          500: '#448b59',
+          600: '#317043',
+          700: '#265735',
+          800: '#1c4228',
+          900: '#0b1910',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       }
     },
   },
@@ -48,4 +61,5 @@ module.exports = {
     require('@tailwindcss/typography'),
   ],
 }
+
 

@@ -6,8 +6,8 @@ app_name = 'courses'
 urlpatterns = [
     path('catalog/', views.course_catalog_view, name='catalog'),
     path('detail/<slug:slug>/', views.course_detail_view, name='detail'),
-    path('enroll/<slug:slug>/', views.course_enroll_view, name='enroll'),
-    path('<slug:slug>/learn/', views.course_learn_view, name='learn'),
+    path('enroll/<slug:slug>/', views.enroll_view, name='enroll'),
+    path('<slug:slug>/learn/', views.learn_view, name='learn'),
     path('modules/<int:module_id>/complete/', views.module_complete_view, name='module_complete'),
 
     # Trainer Course Management

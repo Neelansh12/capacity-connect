@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from apps.core.validators import validate_avatar_image
 
 class Department(models.Model):
     name = models.CharField(max_length=150, unique=True)
@@ -92,7 +93,7 @@ class EmployeeProfile(models.Model):
     experience_years = models.PositiveIntegerField(default=0)
     areas_of_interest = models.TextField(blank=True, help_text="e.g. AI, Climate Modeling, Remote Sensing")
     learning_objectives = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='profiles/employees/', blank=True, null=True)
+    avatar = models.ImageField(upload_to='profiles/employees/', blank=True, null=True, validators=[validate_avatar_image])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -105,7 +106,7 @@ class TrainerProfile(models.Model):
     experience_years = models.PositiveIntegerField(default=0)
     areas_of_expertise = models.TextField(blank=True, help_text="Primary domain expertise")
     biography = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='profiles/trainers/', blank=True, null=True)
+    avatar = models.ImageField(upload_to='profiles/trainers/', blank=True, null=True, validators=[validate_avatar_image])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
